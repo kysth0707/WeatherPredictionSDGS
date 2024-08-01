@@ -24,6 +24,29 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
+# 기상청 API가 너무 느려서 데이터를 미리 작성합니다
+data = ''
+with open('data.txt') as f:
+	data = f.readlines()[-2].rstrip().split()
+
+windSpeed = float(data[5]) #풍속
+temperature = float(data[11]) #기온
+humidity = float(data[19]) #습도
+atmoPressure = float(data[29]) #기압
+
+print(windSpeed, temperature, humidity, atmoPressure)
+
+"""
+df['기온'] = (df['기온'] + 20) / 60
+df['강수량'] = df['강수량'].apply(lambda x: 1 if x > 0 else 0)
+df['풍속'] = df['풍속'] / 12
+df['습도'] = df['습도'] / 100
+df['기압'] = (df['기압'] - 980) / 70
+df['운량'] = df['운량'].replace([0,1,2,3], 0).replace([4,5,6,7,8,9,10], 1)
+"""
+
+
 def preprocessImage(img):
     h,w,c = img.shape
     centerX, centerY = w // 2, h // 2
@@ -63,12 +86,29 @@ async def APIpredict(request: Request, file : UploadFile):
 	]))
 	isCloudy = cloudPrediction[0][0] > 0.5
 
-	
+	# df['기온'], df['운량'], df['풍속'], df['습도'], df['기압']
+	print(np.array([
+		(temperature + 20) / 60,
+		isCloudy,
+		windSpeed / 12,
+		humidity / 100,
+		(atmoPressure - 980) / 70
+	]))
+	rainPrediction = weatherModel.predict(np.array([[
+		(temperature + 20) / 60,
+		isCloudy,
+		windSpeed / 12,
+		humidity / 100,
+		(atmoPressure - 980) / 70
+	]]))
 
 
 	return {
 		"Status": True,
-		"prediction": 1
+		"prediction": {
+			"rain" : float(rainPrediction[0][0]),
+			"cloud" : float(cloudPrediction[0][0])
+		}
 	}
 
 if __name__ == "__main__":

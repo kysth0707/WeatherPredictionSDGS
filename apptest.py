@@ -1,6 +1,6 @@
 import requests
 
-filename = "./testclouds/_1.jpg"
+filename = "./testclouds/_3.jpg"
 
 response = requests.post(
     'http://127.0.0.1:999/api/predict',
