@@ -1,0 +1,9 @@
+11.33 101.38
+↙
+
+53.31 175.16
+↗
+
+https://nmsc.kma.go.kr/IMG/GK2A/AMI/PRIMARY/L1B/L1B-IR105-TILE/COMPLETE/EA/202407/23/04/10/gk2a_ami_le1b_ir105_ea020lc_202407230410.0-0-0.jpg
+
+https://nmsc.kma.go.kr/IMG/GK2A/AMI/PRIMARY/L1B/L1B-IR105-TILE/COMPLETE/EA/년월/일/UTC시/UTC분(10분단위)/gk2a_ami_le1b_ir105_ea020lc_년월일UTC시UTC분(10분단위).0-0-0.jpg
