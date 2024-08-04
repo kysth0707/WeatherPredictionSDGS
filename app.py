@@ -26,14 +26,20 @@ app.add_middleware(
 
 
 # 기상청 API가 너무 느려서 데이터를 미리 작성합니다
-data = ''
-with open('data.txt') as f:
-	data = f.readlines()[-2].rstrip().split()
+# data = ''
+# with open('data.txt') as f:
+# 	data = f.readlines()[-2].rstrip().split()
 
-windSpeed = float(data[5]) #풍속
-temperature = float(data[11]) #기온
-humidity = float(data[19]) #습도
-atmoPressure = float(data[29]) #기압
+tmpData = "[0.38       1.         0.41666667 0.85       0.37285714]".split()
+temperature = float(tmpData[0][1:])
+windSpeed = float(tmpData[2])
+humidity = float(tmpData[3])
+atmoPressure = float(tmpData[4][:-1])
+
+# windSpeed = float(data[5]) #풍속
+# temperature = float(data[11]) #기온
+# humidity = float(data[19]) #습도
+# atmoPressure = float(data[29]) #기압
 
 print(windSpeed, temperature, humidity, atmoPressure)
 
@@ -48,10 +54,10 @@ df['운량'] = df['운량'].replace([0,1,2,3], 0).replace([4,5,6,7,8,9,10], 1)
 
 
 def preprocessImage(img):
-    h,w,c = img.shape
-    centerX, centerY = w // 2, h // 2
-    k = (w if w < h else h) // 2
-    return cv.resize(img[centerY - k : centerY + k, centerX - k : centerX + k], (128, 128))/ 255.
+	h,w,c = img.shape
+	centerX, centerY = w // 2, h // 2
+	k = (w if w < h else h) // 2
+	return cv.resize(img[centerY - k : centerY + k, centerX - k : centerX + k], (128, 128))/ 255.
 
 ipDict = {}
 
@@ -61,6 +67,10 @@ weatherModel = tf.keras.models.load_model('./models/weathermodel_v1.keras')#, co
 
 # cloudModel.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 # weatherModel.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+@app.get('/api/ok')
+def isOk():
+	return True
 
 # 비동기 처리
 @app.post('/api/predict')
@@ -79,7 +89,8 @@ async def APIpredict(request: Request, file : UploadFile):
 
 
 	content = file.file.read()
-	img = np.array(Image.open(io.BytesIO(content)))
+	img = np.array(Image.open(io.BytesIO(content)))[:,:,::-1]
+	# BGR이므로 변경
 	# Image.fromarray((preprocessImage(img)*255).astype(np.uint8)).save(f"{int(time.time())}.jpg")
 
 	# 예측하자
@@ -87,16 +98,28 @@ async def APIpredict(request: Request, file : UploadFile):
 		[preprocessImage(img)]
 	))
 	
-	isCloudy = 1 if cloudPrediction[0][0] > 0.5 else 0
+	# isCloudy = 1. if cloudPrediction[0][0] > 0.5 else 0.
+	isCloudy = cloudPrediction[0][0]
+
+	# print(temperature,
+	# 	isCloudy,
+	# 	windSpeed,
+	# 	humidity,
+	# 	atmoPressure)
 
 	# df['기온'], df['운량'], df['풍속'], df['습도'], df['기압']
-	rainPrediction = weatherModel.predict(np.array([
-		[(temperature + 20) / 60,
+	rainPrediction = weatherModel.predict(np.array([[
+		temperature,
 		isCloudy,
-		windSpeed / 12,
-		humidity / 100,
-		(atmoPressure - 980) / 70]
-	]))
+		windSpeed,
+		humidity,
+		atmoPressure
+	]]))
+	# [(temperature + 20) / 60,
+	# isCloudy,
+	# windSpeed / 12,
+	# humidity / 100,
+	# (atmoPressure - 980) / 70]
 
 	returnText = {
 		"Status": True,
@@ -105,7 +128,7 @@ async def APIpredict(request: Request, file : UploadFile):
 			"cloud" : float(cloudPrediction[0][0])
 		}
 	}
-	print(returnText)
+	# print(returnText)
 	return returnText
 
 if __name__ == "__main__":
