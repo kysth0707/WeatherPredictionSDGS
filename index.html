@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>휴대전화를 이용한 소규모 기상 예측 시스템</title>
+	
+	<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+	<div class="overlay"></div>
+	<div style="margin-top: 50px;"></div>
+	<div class="cloudbox">
+		<br><br>
+		<div class="center">
+			<svg
+			width="96"
+			height="96"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			>
+			<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+			</svg>
+		</div>
+		<br>
+		<div class="center percent" id="cloudtext">0%</div>
+		<br>
+		<div class="center justtext">비 구름</div>
+		<br><br><br><br>
+		<div class="center umbrella">💧</div>
+		<br>
+		<div class="center percent" id="raintext">0%</div>
+		<br>
+		<div class="center justtext">강수 확률</div>
+		<br><br><br><br>
+	</div>
+	<br><br><br>
+	
+	<div class="center">
+		<label for="file">
+			<div class="btn-upload" id="uploadtext">이미지 예측하기</div>
+		</label>
+		<input type="file" name="file" id="file">
+	</div>
+    
+
+	<script src="upload.js"></script>
+</body>
+</html>

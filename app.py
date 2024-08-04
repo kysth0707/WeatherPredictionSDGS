@@ -8,7 +8,7 @@ import io
 from PIL import Image
 import cv2 as cv
 
-TIME_FOR_PREDICT = 10
+TIME_FOR_PREDICT = 1
 
 app = FastAPI()
 
@@ -56,11 +56,11 @@ def preprocessImage(img):
 ipDict = {}
 
 # 모델 로드
-cloudModel = tf.keras.models.load_model('./models/cloudmodel_v1.h5', compile=False)
-weatherModel = tf.keras.models.load_model('./models/weathermodel_v1.h5', compile=False)
+cloudModel = tf.keras.models.load_model('./models/cloudmodel_v1.keras')#, compile=False)
+weatherModel = tf.keras.models.load_model('./models/weathermodel_v1.keras')#, compile=False)
 
-cloudModel.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-weatherModel.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+# cloudModel.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+# weatherModel.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # 비동기 처리
 @app.post('/api/predict')
@@ -75,41 +75,38 @@ async def APIpredict(request: Request, file : UploadFile):
 				"Status": False,
 				"Cause": "limitation for server"
 			}
+		ipDict[ipAddress] = current_time
 
 
 	content = file.file.read()
 	img = np.array(Image.open(io.BytesIO(content)))
+	# Image.fromarray((preprocessImage(img)*255).astype(np.uint8)).save(f"{int(time.time())}.jpg")
 
 	# 예측하자
-	cloudPrediction = cloudModel.predict(np.array([
-		preprocessImage(img)
-	]))
-	isCloudy = cloudPrediction[0][0] > 0.5
+	cloudPrediction = cloudModel.predict(np.array(
+		[preprocessImage(img)]
+	))
+	
+	isCloudy = 1 if cloudPrediction[0][0] > 0.5 else 0
 
 	# df['기온'], df['운량'], df['풍속'], df['습도'], df['기압']
-	print(np.array([
-		(temperature + 20) / 60,
+	rainPrediction = weatherModel.predict(np.array([
+		[(temperature + 20) / 60,
 		isCloudy,
 		windSpeed / 12,
 		humidity / 100,
-		(atmoPressure - 980) / 70
+		(atmoPressure - 980) / 70]
 	]))
-	rainPrediction = weatherModel.predict(np.array([[
-		(temperature + 20) / 60,
-		isCloudy,
-		windSpeed / 12,
-		humidity / 100,
-		(atmoPressure - 980) / 70
-	]]))
 
-
-	return {
+	returnText = {
 		"Status": True,
 		"prediction": {
 			"rain" : float(rainPrediction[0][0]),
 			"cloud" : float(cloudPrediction[0][0])
 		}
 	}
+	print(returnText)
+	return returnText
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=999, reload=True)
