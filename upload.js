@@ -1,3 +1,9 @@
+document.firstElementChild.style.zoom = window.innerHeight/939;
+
+window.addEventListener("resize", function() {
+	document.firstElementChild.style.zoom = window.innerHeight/939;
+})
+
 document.getElementById('file').addEventListener('change', function(event) {
 	const fileInput = event.target;
 	const file = fileInput.files[0]; // 선택한 파일을 가져옵니다.
@@ -8,9 +14,8 @@ document.getElementById('file').addEventListener('change', function(event) {
 	}
 
 	const checkServerStatus = () => {
-		return fetch('http://127.0.0.1:999/api/ok')
+		return fetch('http://nojam.easylab.kr:456/api/ok')
 			.then(response => response.json())
-			.then(data => data);
 	};
 
 	const reader = new FileReader();
@@ -23,7 +28,7 @@ document.getElementById('file').addEventListener('change', function(event) {
 		const formData = new FormData();
 		formData.append('file', file);
 
-		fetch('http://127.0.0.1:999/api/predict', {
+		fetch('http://nojam.easylab.kr:456/api/predict', {
 			method: 'POST',
 			body: formData
 		})
