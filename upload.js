@@ -10,8 +10,14 @@ document.getElementById('file').addEventListener('change', function(event) {
 	const checkServerStatus = () => {
 		return fetch('http://127.0.0.1:999/api/ok')
 			.then(response => response.json())
-			.then(data => data.Status);
+			.then(data => data);
 	};
+
+	const reader = new FileReader();
+	reader.onload = function(e) {
+		document.body.style.backgroundImage = `url(${e.target.result})`;
+	};
+	reader.readAsDataURL(file);
 
 	const uploadFile = () => {
 		const formData = new FormData();
